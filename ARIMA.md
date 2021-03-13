@@ -15,6 +15,13 @@ Kali ini kita akan mencoba membangun model Deret Waktu **$ARIMA$** dengan menggu
 
 # Packages    
 
+```r
+library(readr) # Membaca Data yang diinput
+library(tseries) # Uji ADF
+library(timeSeries) # Mengolah Data yang akan digunakan
+library(lmtest) # Mengecek signifikansi model
+library(forecast) #Membuat prediksi
+```
 
 # Basic EDA (Exploratory Data Analysis)  
 

@@ -14,7 +14,7 @@ output:
 Kali ini kita akan mencoba membangun model Deret Waktu **$ARIMA$** dengan menggunakan R Studio. Ada beberapa packages yang diperlukan  seperti berikut :  
 
 # Packages    
-```{r Packages, echo=FALSE, message=FALSE, warning=FALSE}
+```{r Packages, echo=TRUE, message=FALSE, warning=FALSE}
 library(readr) # Membaca Data yang diinput
 library(tseries) # Uji ADF
 library(timeSeries) # Mengolah Data yang akan digunakan
