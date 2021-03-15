@@ -26,12 +26,23 @@ library(forecast) #Membuat prediksi
 # Basic EDA (Exploratory Data Analysis)  
 
 ```r
-data <- read_delim("Penderita DBD Jakarta Selatan.csv", 
-    ";", escape_double = FALSE, col_types = cols(Tahun = col_skip()), 
-    trim_ws = TRUE)
+data <- read_delim("Data/Penderita DBD Jakarta Selatan.csv", 
+    ";", escape_double = FALSE, trim_ws = TRUE)
+```
+
+```
+## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   Tahun = col_double(),
+##   `Jumlah Penderita` = col_double()
+## )
+```
+
+```r
 ts_data <- ts(data$`Jumlah Penderita`)
 plot(ts_data, main = 'Jumlah Penderita DBD di Jakarta Selatan', 
-     ylab='Banyak Penderita')
+     ylab='Banyak Penderita', type = 'o')
 ```
 
 ![](ARIMA_files/figure-html/data-1.png)<!-- -->
@@ -71,13 +82,13 @@ adf.test(diff_data)
 Perhatikan bahwa $p_{value} < \alpha = 0.05$ yang berarti bahwa data yang kita miliki sudah **stasioner**. Berikutnya membuat grafik ACF dan PACF dari data yang sudah di diferensiasi.  
 
 ```r
-Acf(diff_data, max.lag=36, main = 'ACF Data Diferensiasi')
+Acf(diff_data, lag.max=36, main = 'ACF Data Diferensiasi')
 ```
 
 ![](ARIMA_files/figure-html/ACF dan PACF-1.png)<!-- -->
 
 ```r
-Pacf(diff_data, max.lag=36, main = 'PACF Data Diferensiasi')
+Pacf(diff_data, lag.max=36, main = 'PACF Data Diferensiasi')
 ```
 
 ![](ARIMA_files/figure-html/ACF dan PACF-2.png)<!-- -->

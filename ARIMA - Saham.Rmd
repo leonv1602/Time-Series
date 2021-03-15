@@ -1,21 +1,15 @@
 ---
-title: "ARIMA Model"
-author: "Leonardo Valentino"
-date: "3/13/2021"
-output: 
-  html_document: 
-    toc: yes
-    fig_width: 5
-    fig_height: 3
-    fig_caption: yes
-    keep_md: yes
+title: "Harga Saham X"
+author: "Asisten Senin"
+date: "3/15/2021"
+output: html_document
 ---
 # Halo dan Selamat Datang !!  
 Kali ini kita akan mencoba membangun model Deret Waktu **$ARIMA$** dengan menggunakan R Studio. Ada beberapa packages yang diperlukan  seperti berikut :  
 
 # Packages    
 ```{r Packages, echo=TRUE, message=FALSE, warning=FALSE}
-library(readr) # Membaca Data yang diinput
+library(readxl) # Membaca Data yang diinput
 library(tseries) # Uji ADF
 library(timeSeries) # Mengolah Data yang akan digunakan
 library(lmtest) # Mengecek signifikansi model
@@ -24,17 +18,22 @@ library(forecast) #Membuat prediksi
 
 # Basic EDA (Exploratory Data Analysis)  
 ```{r data, echo=TRUE}
-data <- read_delim("Data/Penderita DBD Jakarta Selatan.csv", 
-    ";", escape_double = FALSE, trim_ws = TRUE)
-ts_data <- ts(data$`Jumlah Penderita`)
-plot(ts_data, main = 'Jumlah Penderita DBD di Jakarta Selatan', 
+data <- read_excel("Data/harga saham.xlsx")
+ts_data <- ts(data$`harga (Euro)`)
+plot(ts_data, main = 'Harga Saham X', 
      ylab='Banyak Penderita', type = 'o')
 ```
 Dalam membuat model $ARIMA$ langkah pertama yang harus dilakukan adalah dengan menguji kestasioneran data. Ada beberapa cara yang dapat digunakan tapi untuk kali ini akan digunakan uji ADF (Augmented Dickey-Fuller) 
 ```{r Uji Stasioner pertama, echo=TRUE, message=FALSE, warning=FALSE}
 adf.test(ts_data)
 ```
-Perhatikan bahwa $p_{value} >\alpha = 0.05$ yang berarti bahwa data yang kita miliki **tidak stasioner** maka dari itu perlu dilakukan diferensiasi kemudian akan diuji kembali apakah sudah stasioner atau belum.  
+Perhatikan bahwa $p_{value} <\alpha = 0.05$ yang berarti bahwa data yang kita miliki **stasioner** maka dari itu perlu dilihat kembali grafik ACF nya sebelum memutuskan untuk melakukan diferensiasi atau tidak.  
+```{r ACF non diff, message=FALSE, warning=FALSE}
+Acf(ts_data, lag.max = 36,main = 'ACF Data Diferensiasi')
+Pacf(ts_data, lag.max = 36,main = 'PACF Data Diferensiasi')
+```
+Perhatikan bahwa grafik ACF nya signifikan
+dilakukan diferensiasi kemudian akan diuji kembali apakah sudah stasioner atau belum.  
 ```{r Diferensiasi}
 diff_data <- diff(ts_data)
 adf.test(diff_data)
@@ -59,6 +58,8 @@ model_2 <- arima(ts_data, order = c(1,1,0))
 summary(model_2)
 model_3 <- arima(ts_data, order = c(0,1,1))
 summary(model_3)
+model_4 <- arima(ts_data, order = c(1,0,2))
+summary(model_4)
 mod_auto = auto.arima(ts_data, max.p=4,max.q=4,stepwise = TRUE)
 summary(mod_auto)
 ```
@@ -68,20 +69,22 @@ coeftest(mod_auto)
 ```
 Dapat dilihat ternyata koefisien drift tidak signifikan sehingga akan digunakan model $ARIMA(0,1,1)$ dan akan diperiksa kembali apakah koefisiennya signifikan atau tidak.  
 ```{r Model 2}
-coeftest(model_3)
+coeftest(model_4)
 ```
 Karna koefisien signifikan maka model yang akan digunakan adalah $ARIMA(0,1,1)$.  
 # Forecasting  
 Berikutnya akan kita gunakan model yang telah dibuat untuk memprediksi model.  
 ```{r Forecast}
-h <-forecast(model_3, h = 5)
+h <-forecast(model_4, h = 5)
 plot(h)
 ```
 # Uji Diagnostik  
 ```{r Diagnostic}
-checkresiduals(model_3)
+checkresiduals(model_4)
 ```
 Dapat dilihat dari grafik residual bahwa dapat dikatakan bahwa galat sudah berdistribusi normal.  
 
 # Kesimpulan  
-Model yang digunakan untuk memodelkan DBD di Jakarta Selatan $ARIMA(0,1,1)$ 
+Model yang digunakan untuk memodelkan di Jakarta Selatan $ARIMA(0,1,1)$ 
+ 
+
