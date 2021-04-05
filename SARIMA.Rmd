@@ -80,7 +80,8 @@ Dari error/galat dapat dilihat bahwa datanya tidak terlalu berdistribusi normal 
 fc <- forecast(model_ma)
 plot(fc)
 ```
-### Kesimpulan  
+  
+### Kesimpulan    
 Model terbaik untuk harga saham $SARIMA(0,1,1)\times (0,1,0)_{4}$.  
 
 # Log
@@ -160,5 +161,6 @@ Dari error/galat dapat dilihat bahwa datanya lebih terlihat berdistribusi normal
 fc <- forecast(model_ma)
 plot(fc)
 ```  
-### Kesimpulan  
+   
+### Kesimpulan    
 Model terbaik untuk memodelkan log dari harga saham tersebut adalah $SARIMA(0,1,1)\times (0,1,0)_{4}$.  

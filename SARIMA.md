@@ -316,7 +316,10 @@ fc <- forecast(model_ma)
 plot(fc)
 ```
 
-![](SARIMA_files/figure-gfm/Forecast-1.png)<!-- --> \#\#\# Kesimpulan  
+![](SARIMA_files/figure-gfm/Forecast-1.png)<!-- -->
+
+### Kesimpulan
+
 Model terbaik untuk harga saham \(SARIMA(0,1,1)\times (0,1,0)_{4}\).
 
 # Log
@@ -584,7 +587,9 @@ fc <- forecast(model_ma)
 plot(fc)
 ```
 
-![](SARIMA_files/figure-gfm/Forecast%202-1.png)<!-- --> \#\#\#
-Kesimpulan  
+![](SARIMA_files/figure-gfm/Forecast%202-1.png)<!-- -->
+
+### Kesimpulan
+
 Model terbaik untuk memodelkan log dari harga saham tersebut adalah
 \(SARIMA(0,1,1)\times (0,1,0)_{4}\).
