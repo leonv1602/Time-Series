@@ -1,0 +1,164 @@
+---
+title: "Tes Akhir 3 - Senin"
+output: github_document
+---
+# Non Logaritma
+## Pre-Processing
+### Library
+```{r Library Package}
+library(tseries)
+library(forecast)
+library(lmtest)
+library(readxl)
+```
+
+### Input Data
+```{r Input Data}
+Data <- read_excel("Data/Data.xlsx")
+ts_data <- ts(Data$Saham)
+plot(ts_data, main ='Data Time Series')
+Acf(ts_data, main = 'Plot ACF Data')
+adf.test(ts_data)
+```
+Perhatikan bahwa pada Plot ACF tersebut belum menandakan adanya pengaruh seasonal. Karena datanya juga non-stasioner (dari ACF dan ADF Test), maka akan didiferensiasi.
+
+### Processing
+```{r Diferensiasi 1 kali}
+diff_ts <- diff(ts_data)
+Acf(diff_ts,lag.max = 48, main = 'ACF Data Differensiasi')
+Pacf(diff_ts,lag.max = 48, main = 'PACF Data Differensiasi')
+```
+Perhatikan pada plot ACF bahwa setiap lag ke-4 selalu signifikan maka akan dicoba di diferensiasi pada seasonal 4.  
+```{r Diferensiasi Musiman}
+diff_ts_seasonal <- diff(diff_ts, lag = 4)
+Acf(diff_ts_seasonal,lag.max = 48, main = 'ACF Data Differensiasi Musiman')
+Pacf(diff_ts_seasonal,lag.max = 48, main = 'PACF Data Differensiasi Musiman')
+```
+Dapat dilihat bahwa grafik ACF signifikan pada lag 1 - 4 dan  PACF pada lag 1. Sehingga model yang mungkin adalah :  
+  
+1. $SARIMA(1,1,1) \times (0,1,1)_{4}$    
+2. $SARIMA(2,1,1) \times (0,1,1)_{4}$    
+3. $SARIMA(3,1,1) \times (0,1,1)_{4}$     
+  
+### Modelling   
+```{r Modelling}
+ts_data <- ts(Data$Saham, frequency = 4) # Tidak Perlu jika sudah di declare di awal
+
+model_1 <- arima(ts_data, order = c(1,1,1),seasonal = list(order= c(0,1,1), period = 4))
+summary(model_1)
+
+model_2 <- arima(ts_data, order = c(2,1,1),seasonal = list(order= c(0,1,1), period = 4))
+summary(model_2)
+
+model_3 <- arima(ts_data, order = c(3,1,1),seasonal = list(order= c(0,1,1), period = 4))
+summary(model_3)
+
+model_auto <- auto.arima(ts_data, seasonal = TRUE)
+summary(model_auto)
+```
+Dapat dilihat bahwa model $SARIMA(3,1,1)\times (0,1,0)_{4}$ memiliki AIC paling rendah dengan error yang tidak jauh berbeda dari yang lain. Model yang dapat dipilih adalah $SARIMA(3,1,1)\times (0,1,1)_{4}$, $SARIMA(2,1,1)\times (0,1,1)_{4}$ dan $SARIMA(3,1,1)\times (0,1,1)_{4}$. Berikutnya akan dilihat signifikansi dari parameter. 
+
+```{r Significant}
+coeftest(model_2)
+coeftest(model_3)
+coeftest(model_auto)
+```
+Dapat dilihat bahwa model ini signifikan hanya pada $SARIMA(0,1,1)\times(0,1,0)$ sehingga akan dicoba untuk memodelkan ulang :  
+```{r Ulangi}
+model_ma <- arima(ts_data, order = c(0,1,1),seasonal = list(order= c(0,1,0), period = 4))
+summary(model_ma)
+coeftest(model_ma)
+```
+Ternyata model $SARIMA(0,1,1)\times (0,1,0)_{4}$ memiliki performa yang jauh lebih baik dari yang lain. Sehingga model ini akan digunakan ke depannya. Akan dilihat Residual dari model ini  
+```{r residu}
+checkresiduals(model_ma)
+```
+Dari error/galat dapat dilihat bahwa datanya tidak terlalu berdistribusi normal maupun saling bebas. Sehingga galat dari model tersebut dapat dimodelkan dengan model Heteroskedastis untuk memperoleh prediksi yang lebih baik. Tapi untuk topik kali ini cukup sampai model $SARIMA(0,1,1)\times (0,1,0)_{4}$.  
+
+### Forecasting 
+```{r Forecast}
+fc <- forecast(model_ma)
+plot(fc)
+```
+### Kesimpulan  
+Model terbaik untuk harga saham $SARIMA(0,1,1)\times (0,1,0)_{4}$.  
+
+# Log
+## Pre-Processing
+### Library
+```{r Library Package 2}
+library(tseries)
+library(forecast)
+library(lmtest)
+library(readxl)
+```
+
+### Input Data
+```{r Input Data 2}
+Data <- read_excel("Data/Data.xlsx")
+ts_data <- ts(log(Data$Saham))
+plot(ts_data, main ='Data Time Series')
+Acf(ts_data, main = 'Plot ACF Data')
+adf.test(ts_data)
+```
+Perhatikan bahwa pada Plot ACF tersebut belum menandakan adanya pengaruh seasonal. Karena datanya juga non-stasioner (dari ACF dan ADF Test), maka akan didiferensiasi.
+
+### Processing
+```{r Diferensiasi 1 kali 2}
+diff_ts <- diff(ts_data)
+Acf(diff_ts,lag.max = 48, main = 'ACF Data Differensiasi')
+Pacf(diff_ts,lag.max = 48, main = 'PACF Data Differensiasi')
+```
+Perhatikan pada plot ACF bahwa setiap lag ke-4 selalu signifikan maka akan dicoba di diferensiasi pada seasonal 4.  
+```{r Diferensiasi Musiman 2}
+diff_ts_seasonal <- diff(diff_ts, lag = 4)
+Acf(diff_ts_seasonal,lag.max = 48, main = 'ACF Data Differensiasi Musiman')
+Pacf(diff_ts_seasonal,lag.max = 48, main = 'PACF Data Differensiasi Musiman')
+```
+Dapat dilihat bahwa grafik ACF signifikan pada lag 1 dan  PACF pada lag 1. Sehingga model yang mungkin adalah :  
+  
+1. $SARIMA(1,1,1) \times (0,1,0)_4$    
+2. $SARIMA(0,1,1) \times (0,1,0)_4$     
+3. $SARIMA(1,1,0) \times (0,1,0)_4$   
+  
+### Modelling   
+```{r Modelling 2}
+ts_data <- ts(log(Data$Saham), frequency = 4) # Tidak Perlu jika sudah di declare di awal
+
+model_1 <- arima(ts_data, order = c(1,1,1),seasonal = list(order= c(0,1,0), period = 4))
+summary(model_1)
+
+model_2 <- arima(ts_data, order = c(0,1,1),seasonal = list(order= c(0,1,0), period = 4))
+summary(model_2)
+
+model_3 <- arima(ts_data, order = c(1,1,0),seasonal = list(order= c(0,1,0), period = 4))
+summary(model_3)
+
+model_auto <- auto.arima(ts_data, seasonal = TRUE)
+summary(model_auto)
+```
+Dapat dilihat bahwa model $SARIMA(2,0,0)\times (1,1,0)_{4}$ memiliki AIC paling rendah dengan error yang tidak jauh berbeda dari yang lain hanya saja model ini tentu dapat ditolak dengan alasan bahwa model memiliki trend naik yang mengakibatkan data tersebut sudah pasti tidak stasioner. Sehingga model yang dapat dipilih hanya $SARIMA(1,1,1)\times (0,1,0)_{4}$. Berikutnya akan dilihat signifikansi dari parameter. 
+
+```{r Significant 2}
+coeftest(model_1)
+coeftest(model_auto)
+```
+Dapat dilihat bahwa model ini signifikan hanya pada $SARIMA(1,1,1)\times(0,1,0)$ sehingga akan dicoba untuk memodelkan ulang :  
+```{r Ulangi 2}
+model_ma <- arima(ts_data, order = c(0,1,1),seasonal = list(order= c(0,1,0), period = 4))
+summary(model_ma)
+coeftest(model_ma)
+```
+Ternyata model $SARIMA(0,1,1)\times (0,1,0)_{4}$ memiliki performa yang jauh lebih baik dari yang lain. Sehingga model ini akan digunakan ke depannya. Akan dilihat Residual dari model ini  
+```{r residu 2}
+checkresiduals(model_ma)
+```
+Dari error/galat dapat dilihat bahwa datanya lebih terlihat berdistribusi normal hanya saja masih belum terlalu terlihat galatnya saling bebas.  
+
+### Forecasting 
+```{r Forecast 2}
+fc <- forecast(model_ma)
+plot(fc)
+```  
+### Kesimpulan  
+Model terbaik untuk memodelkan log dari harga saham tersebut adalah $SARIMA(0,1,1)\times (0,1,0)_{4}$.  
